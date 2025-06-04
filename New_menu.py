@@ -121,10 +121,9 @@ class Order:
         for i in self.order:
             amount += i.calculate_total_price()
         return amount
-    
-    def cba_tip(self):
-        return self.calculate_bill_amount() * (1 + self.tip/100)
-         
+
+#! ya no se va a tomar  los descuentos en el programa principal
+        
     def discounts(self):
         print("")
         desserts = [i for i in self.order if isinstance(i, Dessert)]
@@ -151,6 +150,37 @@ class Order:
             return "no puedes aplicarle descuento al descuento, bobo hpta"
         else:
             return "no hay descuentos disponibles, pobre"
+        
+
+class Payment:
+    def __init__(self):
+        pass
+
+    def pay(self, check):
+        raise NotImplementedError("No se ha definido tontin)")
+
+class CardPayment(Payment):
+    def __init__(self, number, cvv):
+        super().__init__()
+        self.number = number
+        self.cvv = cvv
+
+    def pay(self, check):
+        print(f"Paying ${check} with card {self.number[-4:]}")
+
+class CashPayment(Payment):
+    def __init__(self, get_money: float):
+        super().__init__()
+        self.money = get_money
+
+    def pay(self, check):
+        if self.money > check:
+            print(f"It was paid the bill of ${check}, your change is ${self.money - check}")
+        elif self.money == check:
+            print(f"It was paid exact check, no change")
+        else:
+            print(f"You don't have enough money to pay the check, We accept other payment methods")
+        
 
          
 milhoja = Dessert("milhoja", 7500, True, "Postre con mil hojas")
@@ -166,28 +196,41 @@ limonada = Beverage("limonada de coco", 3500, "frutiño", "Limonada hecha con ag
 
 menu = [milhoja, pollo_asado, bistec, natilla, changua, cerveza_1, aguardiente, chunchullo, mojarra, limonada]
 cliente = Order(menu, tip = 0)
+
+card = CardPayment("15478935456215789", 666)
+cash = CashPayment(130000)
+
 cliente.see_menu()
 cliente.add_item(pollo_asado)
 cliente.add_item(bistec)
 print(cliente.see_order())
 print(cliente.calculate_bill_amount())
 
-print(cliente.discounts())
 print(cliente.calculate_bill_amount())
 cliente.see_order()
 print("")
 print(cliente.add_item(mojarra))
 print(cliente.add_item(milhoja))
 print(cliente.add_item(changua))
+
 cliente.see_order()
 cliente.calculate_bill_amount()
-cliente.discounts()
 cliente.see_order()
+
+print("                                  |CUENTA|")
 a = float(input(f"cuanto porcentaje de la cuenta quieres agregar: "))
+total = cliente.calculate_bill_amount() 
 cliente.tip = a
 if a == 0:
     print("tacaño resulto el señor!")
-total = cliente.calculate_bill_amount() 
-print(f"Total a pagar: {total}, cuenta de {total * (1 - (100 - cliente.tip )/100) } con propina de: {cliente.tip}%" )
 
-
+total_plustip = total * (a / 100 + 1)
+print(f"Total a pagar: {total_plustip}, cuenta de {total} con propina de: {cliente.tip}%" )
+print("")
+print("$Pay the bill with cash$")
+print("")
+cash.pay(total_plustip)
+print("")
+print("$Pay the bill with card$")
+print("")
+card.pay(total_plustip)
